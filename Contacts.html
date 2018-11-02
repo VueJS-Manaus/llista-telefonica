@@ -1,133 +1,90 @@
 <html>
-
 <head>
-	<meta charset="UTF-8">
-	<link href="bootstrap.min.css" rel="stylesheet">
-	<script src="vue.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/5.5.7/firebase.js"></script>
+ 	<meta charset="UTF-8"> 
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	
 </head>
-
 <body>
 	<div id="app">
 		<h1 class="jumbotron">{{ message }}</h1>
 		<div class="col-2">
 			<label>Nome</label>
 			<input v-model="contact.name">
-
-			<label>Telefone</label>
-			<input type="number" v-model="contact.phone">
-
-			<button class="mt-3 mb-3 btn btn-primary" @click="add()">Adicionar</button>
+ 			<label>Telefone</label>
+			<input type="number" v-model="contact.telephone">
+			
+			<button class="mt-3 mb-3 btn btn-primary" 
+			@click="add()">Adicionar</button>
 		</div>
-
+		
 		<table class="table">
-			<thead>
-				<tr>
-					<th scope="col">#</th>
-					<th scope="col">Nome</th>
-					<th scope="col">Telefone</th>
-					<th scope="col">Ação</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="(item, index) in list">
-					<th scope="row">{{ index + 1 }}</th>
-					<td>{{ item.name }}</td>
-					<td>{{ item.phone }}</td>
-					<td>
-						<button @click="edit(item)" class="btn btn-info">Editar</button>
-						<button @click="remove(item)" class="btn btn-danger">Excluir</button>
-					</td>
-				</tr>
-			</tbody>
+		  <thead>
+			<tr>
+			  <th scope="col">#</th>
+			  <th scope="col">Nome</th>
+			  <th scope="col">Telefone</th>
+			  <th scope="col">Ação</th>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr v-for="item in list">
+				<th scope="row">{{ item.id }}</th>
+				<td>{{ item.name }}</td>
+				<td>{{ item.telephone }}</td>
+				<td>
+					<button @click="edit(item)" class="btn btn-info">Editar</button>
+					<button @click="remove(item)" class="btn btn-danger">Excluir</button>
+				</td>
+			</tr>
+		  </tbody>
 		</table>
 	</div>
 </body>
-
 </html>
-
 <script>
-	// Initialize Firebase
-
-
 	new Vue({
-		el: '#app',
-		data: {
-			message: 'Agenda Telefônica',
-			contact: {
-				id: 0,
-				name: null,
-				phone: null
-			},
-			index: null,
-			list: []
+	  el: '#app',
+	  data: {
+		message: 'Agenda Telefônica',
+		contact: {
+			id: 0,
+			name: null,
+			telephone: null
 		},
-		mounted() {
-
-			// const contacts = JSON.parse( localStorage.getItem( 'contacts' ) )
-			// this.list = contacts ? contacts : []
-
-			this.database.on('value', snapshot => {
-				this.list = []
-				snapshot.forEach(element => {
-					this.list.push({
-						id: element.key,
-						...element.val()
-					})
-				});
-			})
-		},
-		methods: {
-			add() {
-				// if (this.contact.id === 0) {
-				// 	this.contact.id = this.list.length + 1
-				// 	this.list.push(this.contact)
-
-				// } else {
-				// 	this.list[this.index] = this.contact
-				// }
-				// localStorage.setItem('contacts', JSON.stringify(this.list))
-
-				const contacts = {}
-				const id = this.contact.id ? this.contact.id : this.database.push().key
-				contacts[id] = {
-					name: this.contact.name,
-					phone: this.contact.phone
-				}
-				this.database.update(contacts)
-
-				this.contact = {
-					id: 0,
-					name: null,
-					phone: null
-				}
-			},
-
-			remove(item) {
-				console.log(item)
-				this.database
-					.child(item.id)
-					.remove()
-			},
-
-			edit(item) {
-				this.index = this.list.indexOf(item)
-				this.contact = Object.assign({}, item);
+		index: null,
+		list: []
+	  },
+	  mounted() {
+		const contacts = JSON.parse(localStorage.getItem('contacts'))
+		this.list = contacts ? contacts : []
+	  },
+	  methods: {
+		add() {			
+			if(this.contact.id === 0) {
+				this.contact.id = this.list.length + 1
+				this.list.push(this.contact)
+				
+			} else {
+				this.list[this.index] = this.contact
 			}
+			localStorage.setItem('contacts', JSON.stringify(this.list))
+			this.contact = {id: 0, name: null, telephone: null}
 		},
-		computed: {
-			database() {
-				var config = {
-					apiKey: "AIzaSyBeIhCgVwIDfJXfZxbqgxKUbkfON1LDB4o",
-					authDomain: "contacts-c9667.firebaseapp.com",
-					databaseURL: "https://contacts-c9667.firebaseio.com",
-					projectId: "contacts-c9667",
-					storageBucket: "contacts-c9667.appspot.com",
-					messagingSenderId: "1038818264859"
-				}
-				const fireapp = firebase.initializeApp(config)
-				return fireapp.database().ref('contacts')
-			}
-		}
+		
+		remove(item) {
+			const idx = this.list.indexOf(item)
+			this.list.splice(idx, 1)
+			localStorage.setItem('contacts', JSON.stringify(this.list))
+		}, 
+		
+		edit(item) {
+			this.index = this.list.indexOf(item)
+			this.contact = Object.assign({}, item);
+			localStorage.setItem('contacts', JSON.stringify(this.list))
+		}		
+	  }
+	  
 	})
-</script>
+</script> 
